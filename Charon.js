@@ -9,7 +9,7 @@
  * @param fileField - the field to use for getting the file for upload
  * @param other - an array of data to be sent with the file upload
  */
-var Charon = function(uploadURL, fileField, other) {
+var Charon = function (uploadURL, fileField, other) {
     this.url = uploadURL;
     this.file = fileField;
     this.additionalData = other;
@@ -33,6 +33,9 @@ Charon.prototype = {
 
     // other information to submit at the same time as the file
     , additionalData: ''
+
+    // should we output debug to the console
+    , outputDebugging: false
 
     /**
      * User defined callbacks for different events.
@@ -63,6 +66,16 @@ Charon.prototype = {
     , readyStateChangeCallback: ''
 
     /**
+     * Pass messages in to be shown on the console.  Will only output if outputDebugging is set to true
+     * @param message - the message to output to the console log
+     */
+    , debug: function (message) {
+        if (this.outputDebugging) {
+            console.log(message);
+        }
+    }
+
+    /**
      * Check to see is a particular user callback is set.  If so, we know we can make a function call
      * @param callbackName - the name of the callback to use.  This will be one of:
      *  - loadStartCallback
@@ -75,7 +88,7 @@ Charon.prototype = {
      *  - readyStateChangeCallback
      * @return boolean - true is the callback is set.  False if it is not.
      */
-    , callbackIsSet: function(callbackName) {
+    , callbackIsSet: function (callbackName) {
         // going to assume the callback is not set.
         var callbackSet = false;
 
@@ -96,13 +109,228 @@ Charon.prototype = {
             var callbackValue = eval(callbackName);
             if (callbackValue !== undefined
                 && callbackValue !== ''
-            ){
+            ) {
                 callbackSet = true;
             }
         }
 
-
         return callbackSet;
+    }
+
+    /**
+     * Check if a particular item is an array
+     * @param objectToTest - the object/item to check when seeing if it is an array
+     * @return boolean
+     */
+    , isArray: function (objectToTest) {
+        return Object.prototype.toString(objectToTest) === "[object Array]";
+    }
+
+    /**
+     * Upload the file and any additional data which might be needed
+     */
+    , sendFile: function () {
+
+        // check we have set the URL before we try and do anything
+        if (this.url === '')
+        {
+            throw new Error('No URL set.  Cannot continue');
+        }
+
+        // setup a form data variable so we can build the form with the information we need rather than everything.
+        var formData = new FormData();
+
+        /**
+         * Check that additionalData is an array
+         * If it is, get each item and build the form data
+         */
+        if (this.isArray(this.additionalData)) {
+            for (key in this.additionalData) {
+                // add the item to the form data in the form key, value
+                formData.append(key, this.additionalData[key]);
+            }
+        }
+
+        // create the XMLHttpRequest object for sending the information
+        var xhr = new XMLHttpRequest();
+
+        // open the request, set the URL from that was given to send the file to, and set the transport to be POST
+        xhr.open('POST', this.url, true);
+
+        /**
+         * Set up the callback functionality for the different events which can be used
+         */
+
+        // setup the loadstart listener and functionality
+        xhr.addEventListener('loadstart', this.loadStart(event));
+
+        // setup the progress listener and functionality
+        xhr.addEventListener('progress', this.progress(event));
+
+        // setup the abort listener and functionality
+        xhr.addEventListener('abort', this.abort(event));
+
+        // setup the error listener and functionality
+        xhr.addEventListener('error', this.error(event));
+
+        // setup the load listener and functionality
+        xhr.addEventListener('load', this.load(event));
+
+        // setup the timeout listener and functionality
+        xhr.addEventListener('timeout', this.timeOut(event));
+
+        // setup the loadend listener and functionality
+        xhr.addEventListener('loadend', this.loadEnd(event));
+
+        // setup the readystatechange listener and functionality
+        xhr.addEventListener('readystatechange', this.readyStateChange(event));
+
+        // we've set up all of the functionality we need, now send the actual form
+        xhr.send(formData);
+    }
+
+    /**
+     * Load start event functionality.
+     * This contains the default functionality for handling the loadstart event.
+     * Once the default functionality has ran, this will call the loadstart callback defined by the user in loadStartCallback
+     * @param loadStartEvent
+     */
+    , loadStart: function (loadStartEvent) {
+        // there is no default functionality for this built in
+        this.debug('running loadStart');
+
+        // Check if the loadStart callback is set, and run the function if so
+        if (this.callbackIsSet(this.loadStartCallback)) {
+            this.debug('Calling user defined function ' + this.loadStartCallback);
+            // Call the user defined loadstart function with the loadstart event
+            eval(this.loadStartCallback + "( " + loadStartEvent + ");");
+        }
+    }
+
+    /**
+     * Progress event functionality.
+     * This contains the default functionality for handling the progress event.
+     * Once the default functionality has ran, this will call the progress callback defined by the user in progressCallback
+     * @param progressEvent
+     */
+    , progress: function (progressEvent) {
+        // there is no default functionality for this built in
+        this.debug('running progress');
+
+        // Check if the progress callback is set, and run the function if so
+        if (this.callbackIsSet(this.progressCallback)) {
+            this.debug('Calling user defined function ' + this.progressCallback);
+            // Call the user defined progress function with the progress event
+            eval(this.progressCallback + "( " + progressEvent + ");");
+        }
+    }
+
+    /**
+     * Abort event functionality.
+     * This contains the default functionality for handling the abort event.
+     * Once the default functionality has ran, this will call the abort callback defined by the user in abortCallback
+     * @param abortEvent
+     */
+    , abort: function (abortEvent) {
+        // there is no default functionality for this built in
+        this.debug('running abort');
+
+        // Check if the abort callback is set, and run the function if so
+        if (this.callbackIsSet(this.abortCallback)) {
+            this.debug('Calling user defined function ' + this.abortCallback);
+            // Call the user defined abort function with the abort event
+            eval(this.abortCallback + "( " + abortEvent + ");");
+        }
+    }
+
+    /**
+     * Error event functionality.
+     * This contains the default functionality for handling the error event.
+     * Once the default functionality has ran, this will call the error callback defined by the user in errorCallback
+     * @param errorEvent
+     */
+    , error: function (errorEvent) {
+        this.debug('running error');
+
+        // output an error to the console.  We don't want this to be hidden
+        console.log('An error occurred when transferring the file');
+        // full dump of the error event
+        console.log(errorEvent);
+
+        // Check if the error callback is set, and run the function if so
+        if (this.callbackIsSet(this.errorCallback)) {
+            this.debug('Calling user defined function ' + this.errorCallback);
+            // Call the user defined error function with the error event
+            eval(this.errorCallback + "( " + errorEvent + ");");
+        }
+    }
+
+    /**
+     * Load event functionality.
+     * This contains the default functionality for handling the load event.
+     * Once the default functionality has ran, this will call the load callback defined by the user in loadCallback
+     * @param loadEvent
+     */
+    , load: function (loadEvent) {
+        this.debug('running load');
+
+        // Check if the load callback is set, and run the function if so
+        if (this.callbackIsSet(this.loadCallback)) {
+            this.debug('Calling user defined function ' + this.loadCallback);
+            // Call the user defined load function with the load event
+            eval(this.loadCallback + "( " + loadEvent + ");");
+        }
+    }
+
+    /**
+     * Timeout event functionality.
+     * This contains the default functionality for handling the timeout event.
+     * Once the default functionality has ran, this will call the timeout callback defined by the user in timeOutCallback
+     * @param timeOutEvent
+     */
+    , timeOut: function (timeOutEvent) {
+        this.debug('running timeout');
+
+        // Check if the timeout callback is set, and run the function if so
+        if (this.callbackIsSet(this.timeoutCallback)) {
+            this.debug('Calling user defined function ' + this.timeoutCallback);
+            // Call the user defined timeout function with the timeOut event
+            eval(this.timeoutCallback + "( " + timeOutEvent + ");");
+        }
+    }
+
+    /**
+     * Loadend event functionality.
+     * This contains the default functionality for handling the loadend event.
+     * Once the default functionality has ran, this will call the loadend callback defined by the user in loadEndCallback
+     * @param loadEndEvent
+     */
+    , loadEnd: function (loadEndEvent) {
+        this.debug('running loadend');
+
+        // Check if the loadend callback is set, and run the function if so
+        if (this.callbackIsSet(this.loadEndCallback)) {
+            this.debug('Calling user defined function ' + this.loadEndCallback);
+            // Call the user defined loadend function with the loadEnd event
+            eval(this.loadEndCallback + "( " + loadEndEvent + ");");
+        }
+    }
+
+    /**
+     * readystatechange event functionality.
+     * This contains the default functionality for handling the readystatechange event.
+     * Once the default functionality has ran, this will call the readystatechange callback defined by the user in readyStateChangeCallback
+     * @param loadEndEvent
+     */
+    , readyStateChange: function (readyStateChangeEvent) {
+        this.debug('running readystatechange');
+
+        // Check if the readystatechange callback is set, and run the function if so
+        if (this.callbackIsSet(this.readyStateChangeCallback)) {
+            this.debug('Calling user defined function ' + this.readyStateChangeCallback);
+            // Call the user defined readystatechange function with the readystatechange event
+            eval(this.readyStateChangeCallback + "( " + readyStateChangeEvent + ");");
+        }
     }
 
 };
