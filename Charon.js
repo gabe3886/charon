@@ -97,7 +97,7 @@ Charon.prototype = {
          * Whilst this makes painful reading, we're going to be using the eval function so don't want anything malicious to be called by this
          * TODO: find a better way of doing this
          */
-        if (callbackName === 'loadStartCallback'
+        /*if (callbackName === 'loadStartCallback'
             || callbackName === 'progressCallback'
             || callbackName === 'abortCallback'
             || callbackName === 'errorCallback'
@@ -105,25 +105,28 @@ Charon.prototype = {
             || callbackName === 'timeoutCallback'
             || callbackName === 'loadEndCallback'
             || callbackName === 'readyStateChangeCallback'
-        ) {
-            var callbackValue = eval(callbackName);
-            if (callbackValue !== undefined
-                && callbackValue !== ''
+        ) {*/
+            //var callbackValue = eval(callbackName);
+            if (callbackName !== undefined
+                && callbackName !== ''
             ) {
                 callbackSet = true;
             }
-        }
+        //}
 
         return callbackSet;
     }
 
     /**
-     * Check if a particular item is an array
+     * Check if a particular item is traversable by a for-key-in loop
      * @param objectToTest - the object/item to check when seeing if it is an array
      * @return boolean
      */
-    , isArray: function (objectToTest) {
-        return Object.prototype.toString(objectToTest) === "[object Array]";
+    , isTraversable: function (objectToTest) {
+        this.debug(Object.prototype.toString(objectToTest));
+        this.debug(objectToTest);
+        return (Object.prototype.toString(objectToTest) === "[object Array]" ||
+            Object.prototype.toString(objectToTest) === "[object Object]");
     }
 
     /**
@@ -144,12 +147,23 @@ Charon.prototype = {
          * Check that additionalData is an array
          * If it is, get each item and build the form data
          */
-        if (this.isArray(this.additionalData)) {
+        if (this.isTraversable(this.additionalData)) {
             for (key in this.additionalData) {
-                // add the item to the form data in the form key, value
-                formData.append(key, this.additionalData[key]);
+                // to stop a blank row going in
+                if (this.additionalData[key] !== undefined) {
+                    // add the item to the form data in the form key, value
+                    formData.append(key, this.additionalData[key]);
+                }
             }
         }
+        else
+        {
+            this.debug('additionaData is not an array');
+        }
+
+        // set the file to upload
+        var uploadFile = this.file.files[0];
+        formData.append('charonFile', uploadFile)
 
         // create the XMLHttpRequest object for sending the information
         var xhr = new XMLHttpRequest();
@@ -203,7 +217,11 @@ Charon.prototype = {
         if (this.callbackIsSet(this.loadStartCallback)) {
             this.debug('Calling user defined function ' + this.loadStartCallback);
             // Call the user defined loadstart function with the loadstart event
-            eval(this.loadStartCallback + "( " + loadStartEvent + ");");
+            this.debug(typeof this.loadStartCallback);
+            if (typeof this.loadStartCallback === 'function')
+            {
+                this.loadStartCallback(loadStartEvent);
+            }
         }
     }
 
@@ -221,7 +239,11 @@ Charon.prototype = {
         if (this.callbackIsSet(this.progressCallback)) {
             this.debug('Calling user defined function ' + this.progressCallback);
             // Call the user defined progress function with the progress event
-            eval(this.progressCallback + "( " + progressEvent + ");");
+            this.debug(typeof this.progressCallback);
+            if (typeof this.progressCallback === 'function')
+            {
+                this.progressCallback(progressEvent);
+            }
         }
     }
 
@@ -239,7 +261,11 @@ Charon.prototype = {
         if (this.callbackIsSet(this.abortCallback)) {
             this.debug('Calling user defined function ' + this.abortCallback);
             // Call the user defined abort function with the abort event
-            eval(this.abortCallback + "( " + abortEvent + ");");
+            //eval(this.abortCallback + "( " + abortEvent + ");");
+            if (typeof this.abortCallback === 'function')
+            {
+                this.abortCallback(abortEvent);
+            }
         }
     }
 
@@ -261,7 +287,11 @@ Charon.prototype = {
         if (this.callbackIsSet(this.errorCallback)) {
             this.debug('Calling user defined function ' + this.errorCallback);
             // Call the user defined error function with the error event
-            eval(this.errorCallback + "( " + errorEvent + ");");
+            this.debug(typeof this.errorCallback);
+            if (typeof this.errorCallback === 'function')
+            {
+                this.errorCallback(errorEvent);
+            }
         }
     }
 
@@ -278,7 +308,11 @@ Charon.prototype = {
         if (this.callbackIsSet(this.loadCallback)) {
             this.debug('Calling user defined function ' + this.loadCallback);
             // Call the user defined load function with the load event
-            eval(this.loadCallback + "( " + loadEvent + ");");
+            this.debug(typeof this.loadCallback);
+            if (typeof this.loadCallback === 'function')
+            {
+                this.loadCallback(loadEvent);
+            }
         }
     }
 
@@ -295,7 +329,11 @@ Charon.prototype = {
         if (this.callbackIsSet(this.timeoutCallback)) {
             this.debug('Calling user defined function ' + this.timeoutCallback);
             // Call the user defined timeout function with the timeOut event
-            eval(this.timeoutCallback + "( " + timeOutEvent + ");");
+            this.debug(typeof this.timeoutCallback);
+            if (typeof this.timeoutCallback === 'function')
+            {
+                this.timeoutCallback(timeOutEvent);
+            }
         }
     }
 
@@ -312,7 +350,11 @@ Charon.prototype = {
         if (this.callbackIsSet(this.loadEndCallback)) {
             this.debug('Calling user defined function ' + this.loadEndCallback);
             // Call the user defined loadend function with the loadEnd event
-            eval(this.loadEndCallback + "( " + loadEndEvent + ");");
+            this.debug(typeof this.loadEndCallback);
+            if (typeof this.loadEndCallback === 'function')
+            {
+                this.loadEndCallback(loadEndEvent);
+            }
         }
     }
 
@@ -329,7 +371,11 @@ Charon.prototype = {
         if (this.callbackIsSet(this.readyStateChangeCallback)) {
             this.debug('Calling user defined function ' + this.readyStateChangeCallback);
             // Call the user defined readystatechange function with the readystatechange event
-            eval(this.readyStateChangeCallback + "( " + readyStateChangeEvent + ");");
+            this.debug(typeof this.readyStateChangeCallback);
+            if (typeof this.readyStateChangeCallback === 'function')
+            {
+                this.readyStateChangeCallback(readyStateChangeEvent);
+            }
         }
     }
 
