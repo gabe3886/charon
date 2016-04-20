@@ -5,14 +5,19 @@
 
 /**
  * Constructor for Charon
- * @param uploadURL - the URL to upload the file to
- * @param fileField - the field to use for getting the file for upload
- * @param other - an array of data to be sent with the file upload
+ * @param setupObject - An object with values to override the default Charon values
  */
-var Charon = function (uploadURL, fileField, other) {
-    this.url = uploadURL;
-    this.file = fileField;
-    this.additionalData = other;
+var Charon = function (setupObject) {
+
+    // Loop through each set object item and set it against the relevant item on the prototype object
+    for (var key in setupObject)
+    {
+        //this.key = setupObject.key
+        eval('Charon.prototype.' + key + ' = setupObject. ' + key);
+    }
+
+    return Charon.prototype;
+
 };
 
 /**
@@ -45,7 +50,7 @@ Charon.prototype = {
     , loadStartCallback: ''
 
     // the callback to run when the operation is in progress
-    , progressCallback: ''
+    , progressCallback: null
 
     // the callback to run when the loading of the file has been aborted
     , abortCallback: ''
@@ -161,9 +166,15 @@ Charon.prototype = {
             this.debug('additionaData is not an array');
         }
 
-        // set the file to upload
-        var uploadFile = this.file.files[0];
-        formData.append('charonFile', uploadFile)
+        try {
+            // set the file to upload
+            var uploadFile = this.file.files[0];
+            formData.append('charonFile', uploadFile);
+        }
+        catch(e)
+        {
+            throw new Error('No file set for upload.  Cannot continue');
+        }
 
         // create the XMLHttpRequest object for sending the information
         var xhr = new XMLHttpRequest();
@@ -176,28 +187,28 @@ Charon.prototype = {
          */
 
         // setup the loadstart listener and functionality
-        xhr.addEventListener('loadstart', this.loadStart(event));
+        xhr.addEventListener('loadstart', this.charonLoadStart);
 
         // setup the progress listener and functionality
-        xhr.addEventListener('progress', this.progress(event));
+        xhr.addEventListener('progress', this.charonProgress);
 
         // setup the abort listener and functionality
-        xhr.addEventListener('abort', this.abort(event));
+        xhr.addEventListener('abort', this.charonAbort);
 
         // setup the error listener and functionality
-        xhr.addEventListener('error', this.error(event));
+        xhr.addEventListener('error', this.charonError);
 
         // setup the load listener and functionality
-        xhr.addEventListener('load', this.load(event));
+        xhr.addEventListener('load', this.charonLoad);
 
         // setup the timeout listener and functionality
-        xhr.addEventListener('timeout', this.timeOut(event));
+        xhr.addEventListener('timeout', this.charonTimeOut);
 
         // setup the loadend listener and functionality
-        xhr.addEventListener('loadend', this.loadEnd(event));
+        xhr.addEventListener('loadend', this.charonLoadEnd);
 
         // setup the readystatechange listener and functionality
-        xhr.addEventListener('readystatechange', this.readyStateChange(event));
+        xhr.addEventListener('readystatechange', this.charonReadyStateChange);
 
         // we've set up all of the functionality we need, now send the actual form
         xhr.send(formData);
@@ -209,18 +220,18 @@ Charon.prototype = {
      * Once the default functionality has ran, this will call the loadstart callback defined by the user in loadStartCallback
      * @param loadStartEvent
      */
-    , loadStart: function (loadStartEvent) {
+    , charonLoadStart: function (loadStartEvent) {
         // there is no default functionality for this built in
-        this.debug('running loadStart');
+        Charon.prototype.debug('running loadStart');
 
         // Check if the loadStart callback is set, and run the function if so
-        if (this.callbackIsSet(this.loadStartCallback)) {
-            this.debug('Calling user defined function ' + this.loadStartCallback);
+        if (Charon.prototype.callbackIsSet(Charon.prototype.loadStartCallback)) {
+            Charon.prototype.debug('Calling user defined function ' + Charon.prototype.loadStartCallback);
             // Call the user defined loadstart function with the loadstart event
-            this.debug(typeof this.loadStartCallback);
-            if (typeof this.loadStartCallback === 'function')
+            Charon.prototype.debug(typeof Charon.prototype.loadStartCallback);
+            if (typeof Charon.prototype.loadStartCallback === 'function')
             {
-                this.loadStartCallback(loadStartEvent);
+                Charon.prototype.loadStartCallback(loadStartEvent);
             }
         }
     }
@@ -231,18 +242,18 @@ Charon.prototype = {
      * Once the default functionality has ran, this will call the progress callback defined by the user in progressCallback
      * @param progressEvent
      */
-    , progress: function (progressEvent) {
+    , charonProgress: function (progressEvent) {
         // there is no default functionality for this built in
-        this.debug('running progress');
-
+        Charon.prototype.debug('running progress');
+        
         // Check if the progress callback is set, and run the function if so
-        if (this.callbackIsSet(this.progressCallback)) {
-            this.debug('Calling user defined function ' + this.progressCallback);
+        if (Charon.prototype.callbackIsSet(Charon.prototype.progressCallback)) {
+            Charon.prototype.debug('Calling user defined function ' + Charon.prototype.progressCallback);
             // Call the user defined progress function with the progress event
-            this.debug(typeof this.progressCallback);
-            if (typeof this.progressCallback === 'function')
+            Charon.prototype.debug(typeof Charon.prototype.progressCallback);
+            if (typeof Charon.prototype.progressCallback === 'function')
             {
-                this.progressCallback(progressEvent);
+                Charon.prototype.progressCallback(progressEvent);
             }
         }
     }
@@ -253,18 +264,18 @@ Charon.prototype = {
      * Once the default functionality has ran, this will call the abort callback defined by the user in abortCallback
      * @param abortEvent
      */
-    , abort: function (abortEvent) {
+    , charonAbort: function (abortEvent) {
         // there is no default functionality for this built in
-        this.debug('running abort');
+        Charon.prototype.debug('running abort');
 
         // Check if the abort callback is set, and run the function if so
-        if (this.callbackIsSet(this.abortCallback)) {
-            this.debug('Calling user defined function ' + this.abortCallback);
+        if (Charon.prototype.callbackIsSet(Charon.prototype.abortCallback)) {
+            Charon.prototype.debug('Calling user defined function ' + Charon.prototype.abortCallback);
             // Call the user defined abort function with the abort event
             //eval(this.abortCallback + "( " + abortEvent + ");");
-            if (typeof this.abortCallback === 'function')
+            if (typeof Charon.prototype.abortCallback === 'function')
             {
-                this.abortCallback(abortEvent);
+                Charon.prototype.abortCallback(abortEvent);
             }
         }
     }
@@ -275,8 +286,8 @@ Charon.prototype = {
      * Once the default functionality has ran, this will call the error callback defined by the user in errorCallback
      * @param errorEvent
      */
-    , error: function (errorEvent) {
-        this.debug('running error');
+    , charonError: function (errorEvent) {
+        Charon.prototype.debug('running error');
 
         // output an error to the console.  We don't want this to be hidden
         console.log('An error occurred when transferring the file');
@@ -284,13 +295,13 @@ Charon.prototype = {
         console.log(errorEvent);
 
         // Check if the error callback is set, and run the function if so
-        if (this.callbackIsSet(this.errorCallback)) {
-            this.debug('Calling user defined function ' + this.errorCallback);
+        if (Charon.prototype.callbackIsSet(Charon.prototype.errorCallback)) {
+            Charon.prototype.debug('Calling user defined function ' + Charon.prototype.errorCallback);
             // Call the user defined error function with the error event
-            this.debug(typeof this.errorCallback);
-            if (typeof this.errorCallback === 'function')
+            Charon.prototype.debug(typeof Charon.prototype.errorCallback);
+            if (typeof Charon.prototype.errorCallback === 'function')
             {
-                this.errorCallback(errorEvent);
+                Charon.prototype.errorCallback(errorEvent);
             }
         }
     }
@@ -301,17 +312,17 @@ Charon.prototype = {
      * Once the default functionality has ran, this will call the load callback defined by the user in loadCallback
      * @param loadEvent
      */
-    , load: function (loadEvent) {
-        this.debug('running load');
+    , charonLoad: function (loadEvent) {
+        Charon.prototype.debug('running load');
 
         // Check if the load callback is set, and run the function if so
-        if (this.callbackIsSet(this.loadCallback)) {
-            this.debug('Calling user defined function ' + this.loadCallback);
+        if (Charon.prototype.callbackIsSet(Charon.prototype.loadCallback)) {
+            Charon.prototype.debug('Calling user defined function ' + Charon.prototype.loadCallback);
             // Call the user defined load function with the load event
-            this.debug(typeof this.loadCallback);
-            if (typeof this.loadCallback === 'function')
+            Charon.prototype.debug(typeof Charon.prototype.loadCallback);
+            if (typeof Charon.prototype.loadCallback === 'function')
             {
-                this.loadCallback(loadEvent);
+                Charon.prototype.loadCallback(loadEvent);
             }
         }
     }
@@ -322,17 +333,17 @@ Charon.prototype = {
      * Once the default functionality has ran, this will call the timeout callback defined by the user in timeOutCallback
      * @param timeOutEvent
      */
-    , timeOut: function (timeOutEvent) {
-        this.debug('running timeout');
+    , charonTimeOut: function (timeOutEvent) {
+        Charon.prototype.debug('running timeout');
 
         // Check if the timeout callback is set, and run the function if so
-        if (this.callbackIsSet(this.timeoutCallback)) {
-            this.debug('Calling user defined function ' + this.timeoutCallback);
+        if (Charon.prototype.callbackIsSet(Charon.prototype.timeoutCallback)) {
+            Charon.prototype.debug('Calling user defined function ' + Charon.prototype.timeoutCallback);
             // Call the user defined timeout function with the timeOut event
-            this.debug(typeof this.timeoutCallback);
-            if (typeof this.timeoutCallback === 'function')
+            Charon.prototype.debug(typeof Charon.prototype.timeoutCallback);
+            if (typeof Charon.prototype.timeoutCallback === 'function')
             {
-                this.timeoutCallback(timeOutEvent);
+                Charon.prototype.timeoutCallback(timeOutEvent);
             }
         }
     }
@@ -343,17 +354,17 @@ Charon.prototype = {
      * Once the default functionality has ran, this will call the loadend callback defined by the user in loadEndCallback
      * @param loadEndEvent
      */
-    , loadEnd: function (loadEndEvent) {
-        this.debug('running loadend');
+    , charonLoadEnd: function (loadEndEvent) {
+        Charon.prototype.debug('running loadend');
 
         // Check if the loadend callback is set, and run the function if so
-        if (this.callbackIsSet(this.loadEndCallback)) {
-            this.debug('Calling user defined function ' + this.loadEndCallback);
+        if (Charon.prototype.callbackIsSet(Charon.prototype.loadEndCallback)) {
+            Charon.prototype.debug('Calling user defined function ' + Charon.prototype.loadEndCallback);
             // Call the user defined loadend function with the loadEnd event
-            this.debug(typeof this.loadEndCallback);
-            if (typeof this.loadEndCallback === 'function')
+            Charon.prototype.debug(typeof Charon.prototype.loadEndCallback);
+            if (typeof Charon.prototype.loadEndCallback === 'function')
             {
-                this.loadEndCallback(loadEndEvent);
+                Charon.prototype.loadEndCallback(loadEndEvent);
             }
         }
     }
@@ -364,17 +375,17 @@ Charon.prototype = {
      * Once the default functionality has ran, this will call the readystatechange callback defined by the user in readyStateChangeCallback
      * @param loadEndEvent
      */
-    , readyStateChange: function (readyStateChangeEvent) {
-        this.debug('running readystatechange');
+    , charonReadyStateChange: function (readyStateChangeEvent) {
+        Charon.prototype.debug('running readystatechange');
 
         // Check if the readystatechange callback is set, and run the function if so
-        if (this.callbackIsSet(this.readyStateChangeCallback)) {
-            this.debug('Calling user defined function ' + this.readyStateChangeCallback);
+        if (Charon.prototype.callbackIsSet(Charon.prototype.readyStateChangeCallback)) {
+            Charon.prototype.debug('Calling user defined function ' + Charon.prototype.readyStateChangeCallback);
             // Call the user defined readystatechange function with the readystatechange event
-            this.debug(typeof this.readyStateChangeCallback);
-            if (typeof this.readyStateChangeCallback === 'function')
+            Charon.prototype.debug(typeof Charon.prototype.readyStateChangeCallback);
+            if (typeof Charon.prototype.readyStateChangeCallback === 'function')
             {
-                this.readyStateChangeCallback(readyStateChangeEvent);
+                Charon.prototype.readyStateChangeCallback(readyStateChangeEvent);
             }
         }
     }
