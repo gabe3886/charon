@@ -71,28 +71,28 @@ Charon.prototype = {
      * This will allow the using application to customise the way they handle each events.
      */
     // the callback to run when progress has begun
-    , loadStartCallback: ''
+    , loadStartCallback: null
 
     // the callback to run when the operation is in progress
     , progressCallback: null
 
     // the callback to run when the loading of the file has been aborted
-    , abortCallback: ''
+    , abortCallback: null
 
     // the callback to run when a resource failed to load
-    , errorCallback: ''
+    , errorCallback: null
 
     // the callback to run when a resource and its dependents have finished loading
-    , loadCallback: ''
+    , loadCallback: null
 
     // the callback to run when a resource has timed out
-    , timeoutCallback: ''
+    , timeoutCallback: null
 
     // the callback to run when progression has stopped.  This is called after error, abort or load
-    , loadEndCallback: ''
+    , loadEndCallback: null
 
     // the callback to run whenever the readyState of the resource load has changed
-    , readyStateChangeCallback: ''
+    , readyStateChangeCallback: null
 
     /**
      * Pass messages in to be shown on the console.  Will only output if outputDebugging is set to true
@@ -124,24 +124,13 @@ Charon.prototype = {
         /**
          * Check to see that the passed in callbackName is a valid callback reference
          * Whilst this makes painful reading, we're going to be using the eval function so don't want anything malicious to be called by this
-         * TODO: find a better way of doing this
          */
-        /*if (callbackName === 'loadStartCallback'
-            || callbackName === 'progressCallback'
-            || callbackName === 'abortCallback'
-            || callbackName === 'errorCallback'
-            || callbackName === 'loadCallback'
-            || callbackName === 'timeoutCallback'
-            || callbackName === 'loadEndCallback'
-            || callbackName === 'readyStateChangeCallback'
-        ) {*/
-            //var callbackValue = eval(callbackName);
-            if (callbackName !== undefined
-                && callbackName !== ''
-            ) {
-                callbackSet = true;
-            }
-        //}
+        if (callbackName !== undefined
+            && callbackName !== ''
+            && callbackName !== null
+        ) {
+            callbackSet = true;
+        }
 
         return callbackSet;
     }
